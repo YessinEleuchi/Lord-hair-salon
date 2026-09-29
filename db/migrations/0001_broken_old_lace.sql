@@ -1,0 +1,2 @@
+ALTER TABLE "salon_settings" ADD COLUMN "slot_interval_minutes" integer DEFAULT 30 NOT NULL;--> statement-breakpoint
+ALTER TABLE "salon_settings" ADD CONSTRAINT "salon_settings_slot_interval_check" CHECK ("salon_settings"."slot_interval_minutes" > 0);
