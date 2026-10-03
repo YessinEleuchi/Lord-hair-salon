@@ -15,10 +15,6 @@ export const customers = pgTable(
 
     phone: text("phone").notNull(),
 
-    email: text("email"),
-
-    notes: text("notes"),
-
     createdAt: timestamp("created_at", {
       withTimezone: true,
     })
@@ -34,6 +30,5 @@ export const customers = pgTable(
 
   (table) => [
     index("customers_phone_idx").on(table.phone),
-    index("customers_email_idx").on(table.email),
   ],
 );

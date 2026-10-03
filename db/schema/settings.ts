@@ -26,9 +26,15 @@ export const salonSettings = pgTable(
     email: text("email"),
 
     // Location
-    address: text("address"),
-    city: text("city"),
+address: text("address"),
+city: text("city"),
 
+// Google Maps
+// Normal Google Maps link used by the "Itinéraire" button.
+googleMapsUrl: text("google_maps_url"),
+
+// Google Maps embed URL used by the iframe on the public website.
+mapEmbedUrl: text("map_embed_url"),
     // Social networks
     instagramUrl: text("instagram_url"),
     tiktokUrl: text("tiktok_url"),

@@ -15,6 +15,13 @@
       "when": 1790714809799,
       "tag": "0001_broken_old_lace",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790802059308,
+      "tag": "0002_dry_whirlwind",
+      "breakpoints": true
     }
   ]
 }

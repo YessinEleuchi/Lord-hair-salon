@@ -62,8 +62,6 @@ export const appointments = pgTable(
       .notNull()
       .default("PENDING"),
 
-    customerNotes: text("customer_notes"),
-
     internalNotes: text("internal_notes"),
 
     cancelledAt: timestamp("cancelled_at", {

@@ -1,4 +1,5 @@
 import { TZDate } from "@date-fns/tz";
+
 import {
   and,
   eq,
@@ -146,6 +147,46 @@ export async function getAvailableSlots({
     });
   }
 
+  // ─────────────────────────────────────────────
+  // CURRENT SALON DATE / TIME
+  //
+  // Important:
+  // Never trust the UI alone to prevent booking
+  // dates or times that have already passed.
+  // ─────────────────────────────────────────────
+
+  const now = new TZDate(
+    new Date(),
+    settings.timezone,
+  );
+
+  const today =
+    `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}-${String(
+      now.getDate(),
+    ).padStart(2, "0")}`;
+
+  const isToday = date === today;
+
+  const currentMinutes =
+    now.getHours() * 60 +
+    now.getMinutes();
+
+  // A past date must never expose availability.
+  //
+  // YYYY-MM-DD can safely be compared
+  // lexicographically because the format is
+  // year -> month -> day.
+  if (date < today) {
+    return createEmptyResult({
+      date,
+      timezone: settings.timezone,
+      staff: selectedStaff,
+      service: selectedService,
+    });
+  }
+
   const dayOfWeek = getDayOfWeek(date);
 
   // ─────────────────────────────────────────────
@@ -204,8 +245,13 @@ export async function getAvailableSlots({
       });
     }
 
-    workStart = timeToMinutes(override.startTime);
-    workEnd = timeToMinutes(override.endTime);
+    workStart = timeToMinutes(
+      override.startTime,
+    );
+
+    workEnd = timeToMinutes(
+      override.endTime,
+    );
   } else {
     if (!normalHours) {
       return createEmptyResult({
@@ -216,8 +262,13 @@ export async function getAvailableSlots({
       });
     }
 
-    workStart = timeToMinutes(normalHours.startTime);
-    workEnd = timeToMinutes(normalHours.endTime);
+    workStart = timeToMinutes(
+      normalHours.startTime,
+    );
+
+    workEnd = timeToMinutes(
+      normalHours.endTime,
+    );
   }
 
   // ─────────────────────────────────────────────
@@ -230,15 +281,22 @@ export async function getAvailableSlots({
     .where(
       and(
         eq(staffBreaks.staffId, staffId),
-        eq(staffBreaks.dayOfWeek, dayOfWeek),
+        eq(
+          staffBreaks.dayOfWeek,
+          dayOfWeek,
+        ),
         eq(staffBreaks.enabled, true),
       ),
     );
 
   const breakRanges: MinuteRange[] =
     recurringBreakRows.map((item) => ({
-      start: timeToMinutes(item.startTime),
-      end: timeToMinutes(item.endTime),
+      start: timeToMinutes(
+        item.startTime,
+      ),
+      end: timeToMinutes(
+        item.endTime,
+      ),
     }));
 
   // ─────────────────────────────────────────────
@@ -283,43 +341,51 @@ export async function getAvailableSlots({
         eq(timeOff.staffId, staffId),
 
         // [startAt, endAt) overlaps requested day
-        lt(timeOff.startAt, nextDayStart),
-        gt(timeOff.endAt, dayStart),
+        lt(
+          timeOff.startAt,
+          nextDayStart,
+        ),
+
+        gt(
+          timeOff.endAt,
+          dayStart,
+        ),
       ),
     );
 
   const timeOffRanges: MinuteRange[] =
-  timeOffRows.map((item) => {
-    const effectiveStart =
-      item.startAt < dayStart
-        ? 0
-        : dateToMinutes(
-            item.startAt,
-            settings.timezone,
-          );
+    timeOffRows.map((item) => {
+      const effectiveStart =
+        item.startAt < dayStart
+          ? 0
+          : dateToMinutes(
+              item.startAt,
+              settings.timezone,
+            );
 
-    const effectiveEnd =
-      item.endAt >= nextDayStart
-        ? 24 * 60
-        : dateToMinutes(
-            item.endAt,
-            settings.timezone,
-          );
+      const effectiveEnd =
+        item.endAt >= nextDayStart
+          ? 24 * 60
+          : dateToMinutes(
+              item.endAt,
+              settings.timezone,
+            );
 
-    return {
-      start: clamp(
-        effectiveStart,
-        0,
-        24 * 60,
-      ),
+      return {
+        start: clamp(
+          effectiveStart,
+          0,
+          24 * 60,
+        ),
 
-      end: clamp(
-        effectiveEnd,
-        0,
-        24 * 60,
-      ),
-    };
-  });
+        end: clamp(
+          effectiveEnd,
+          0,
+          24 * 60,
+        ),
+      };
+    });
+
   // ─────────────────────────────────────────────
   // EXISTING APPOINTMENTS
   //
@@ -332,12 +398,18 @@ export async function getAvailableSlots({
     .from(appointments)
     .where(
       and(
-        eq(appointments.staffId, staffId),
+        eq(
+          appointments.staffId,
+          staffId,
+        ),
 
-        inArray(appointments.status, [
-          "PENDING",
-          "CONFIRMED",
-        ]),
+        inArray(
+          appointments.status,
+          [
+            "PENDING",
+            "CONFIRMED",
+          ],
+        ),
 
         lt(
           appointments.startAt,
@@ -352,28 +424,32 @@ export async function getAvailableSlots({
     );
 
   const appointmentRanges: MinuteRange[] =
-  appointmentRows.map((appointment) => {
-    const effectiveStart =
-      appointment.startAt < dayStart
-        ? 0
-        : dateToMinutes(
-            appointment.startAt,
-            settings.timezone,
-          );
+    appointmentRows.map(
+      (appointment) => {
+        const effectiveStart =
+          appointment.startAt <
+          dayStart
+            ? 0
+            : dateToMinutes(
+                appointment.startAt,
+                settings.timezone,
+              );
 
-    const effectiveEnd =
-      appointment.blockedUntil >= nextDayStart
-        ? 24 * 60
-        : dateToMinutes(
-            appointment.blockedUntil,
-            settings.timezone,
-          );
+        const effectiveEnd =
+          appointment.blockedUntil >=
+          nextDayStart
+            ? 24 * 60
+            : dateToMinutes(
+                appointment.blockedUntil,
+                settings.timezone,
+              );
 
-    return {
-      start: effectiveStart,
-      end: effectiveEnd,
-    };
-  });
+        return {
+          start: effectiveStart,
+          end: effectiveEnd,
+        };
+      },
+    );
 
   // ─────────────────────────────────────────────
   // GENERATE CANDIDATE SLOTS
@@ -395,6 +471,21 @@ export async function getAvailableSlots({
     candidateStart < workEnd;
     candidateStart += interval
   ) {
+    // ───────────────────────────────────────────
+    // PAST / CURRENT SLOT
+    //
+    // When booking for today, do not expose a
+    // slot whose start time has already passed
+    // or is exactly the current minute.
+    // ───────────────────────────────────────────
+
+    if (
+      isToday &&
+      candidateStart <= currentMinutes
+    ) {
+      continue;
+    }
+
     const serviceEnd =
       candidateStart + duration;
 
@@ -407,6 +498,7 @@ export async function getAvailableSlots({
       continue;
     }
 
+    // Recurring staff breaks
     if (
       overlapsAny(
         candidateStart,
@@ -417,6 +509,7 @@ export async function getAvailableSlots({
       continue;
     }
 
+    // Time off
     if (
       overlapsAny(
         candidateStart,
@@ -427,6 +520,7 @@ export async function getAvailableSlots({
       continue;
     }
 
+    // Existing appointments
     if (
       overlapsAny(
         candidateStart,
@@ -438,10 +532,20 @@ export async function getAvailableSlots({
     }
 
     slots.push({
-      start: minutesToTime(candidateStart),
-      end: minutesToTime(serviceEnd),
+      start:
+        minutesToTime(
+          candidateStart,
+        ),
+
+      end:
+        minutesToTime(
+          serviceEnd,
+        ),
+
       blockedUntil:
-        minutesToTime(blockedUntil),
+        minutesToTime(
+          blockedUntil,
+        ),
     });
   }
 
@@ -460,7 +564,8 @@ export async function getAvailableSlots({
     date,
     timezone: settings.timezone,
 
-    available: slots.length > 0,
+    available:
+      slots.length > 0,
 
     staff: {
       id: selectedStaff.id,
@@ -470,8 +575,10 @@ export async function getAvailableSlots({
     service: {
       id: selectedService.id,
       name: selectedService.name,
+
       durationMinutes:
         selectedService.durationMinutes,
+
       bufferMinutes:
         selectedService.bufferMinutes,
     },
@@ -538,6 +645,7 @@ function createEmptyResult({
   return {
     date,
     timezone,
+
     available: false,
 
     staff: {
@@ -548,8 +656,10 @@ function createEmptyResult({
     service: {
       id: service.id,
       name: service.name,
+
       durationMinutes:
         service.durationMinutes,
+
       bufferMinutes:
         service.bufferMinutes,
     },
@@ -582,7 +692,9 @@ function buildSessions({
    * Afternoon: 14:00 -> 18:00
    */
 
-  const mainBreak = [...breakRanges]
+  const mainBreak = [
+    ...breakRanges,
+  ]
     .filter(
       (range) =>
         range.start > workStart &&
@@ -603,41 +715,78 @@ function buildSessions({
             ? "MORNING"
             : "AFTERNOON",
 
-        start: minutesToTime(workStart),
-        end: minutesToTime(workEnd),
+        start:
+          minutesToTime(
+            workStart,
+          ),
+
+        end:
+          minutesToTime(
+            workEnd,
+          ),
+
         slots,
       },
     ];
   }
 
-  const morningSlots = slots.filter(
-    (slot) =>
-      timeToMinutes(slot.start) <
-      mainBreak.start,
-  );
+  const morningSlots =
+    slots.filter(
+      (slot) =>
+        timeToMinutes(
+          slot.start,
+        ) < mainBreak.start,
+    );
 
-  const afternoonSlots = slots.filter(
-    (slot) =>
-      timeToMinutes(slot.start) >=
-      mainBreak.end,
-  );
+  const afternoonSlots =
+    slots.filter(
+      (slot) =>
+        timeToMinutes(
+          slot.start,
+        ) >= mainBreak.end,
+    );
 
-  const sessions: AvailabilitySession[] = [];
+  const sessions:
+    AvailabilitySession[] = [];
 
-  if (workStart < mainBreak.start) {
+  if (
+    workStart <
+    mainBreak.start
+  ) {
     sessions.push({
       type: "MORNING",
-      start: minutesToTime(workStart),
-      end: minutesToTime(mainBreak.start),
+
+      start:
+        minutesToTime(
+          workStart,
+        ),
+
+      end:
+        minutesToTime(
+          mainBreak.start,
+        ),
+
       slots: morningSlots,
     });
   }
 
-  if (mainBreak.end < workEnd) {
+  if (
+    mainBreak.end <
+    workEnd
+  ) {
     sessions.push({
       type: "AFTERNOON",
-      start: minutesToTime(mainBreak.end),
-      end: minutesToTime(workEnd),
+
+      start:
+        minutesToTime(
+          mainBreak.end,
+        ),
+
+      end:
+        minutesToTime(
+          workEnd,
+        ),
+
       slots: afternoonSlots,
     });
   }
