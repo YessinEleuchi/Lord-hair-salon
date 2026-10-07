@@ -8,6 +8,11 @@ import {
   AppointmentActions,
 } from "@/components/admin/appointment/appointment-actions";
 
+import {
+  APPOINTMENT_STATUS,
+  type AppointmentStatus,
+} from "@/db/schema/enums";
+
 import type {
   CalendarDayData,
 } from "@/features/calendar/queries";
@@ -24,37 +29,31 @@ type Props = {
   appointment: CalendarAppointment;
 };
 
-const statusConfig = {
-  PENDING: {
+const statusConfig: Record<
+  AppointmentStatus,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  [APPOINTMENT_STATUS.PENDING]: {
     label: "En attente",
     className:
       "border-brand/20 bg-brand/10 text-brand",
   },
 
-  CONFIRMED: {
+  [APPOINTMENT_STATUS.CONFIRMED]: {
     label: "Confirmé",
     className:
       "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
   },
 
-  COMPLETED: {
-    label: "Terminé",
-    className:
-      "border-white/10 bg-white/[0.05] text-white/45",
-  },
-
-  CANCELLED: {
+  [APPOINTMENT_STATUS.CANCELLED]: {
     label: "Annulé",
     className:
       "border-red-500/20 bg-red-500/[0.06] text-red-300",
   },
-
-  NO_SHOW: {
-    label: "Absent",
-    className:
-      "border-orange-500/20 bg-orange-500/[0.06] text-orange-300",
-  },
-} as const;
+};
 
 export function CalendarAppointmentCard({
   appointment,
@@ -64,9 +63,13 @@ export function CalendarAppointmentCard({
       appointment.status
     ];
 
-  const cancelled =
+  const isPending =
     appointment.status ===
-    "CANCELLED";
+    APPOINTMENT_STATUS.PENDING;
+
+  const isCancelled =
+    appointment.status ===
+    APPOINTMENT_STATUS.CANCELLED;
 
   const appointmentDate =
     formatAppointmentDate(
@@ -78,6 +81,11 @@ export function CalendarAppointmentCard({
       appointment.startAt,
     );
 
+  const appointmentEndTime =
+    formatAppointmentTime(
+      appointment.endAt,
+    );
+
   return (
     <article
       className={`
@@ -86,10 +94,9 @@ export function CalendarAppointmentCard({
         border
         p-4
         ${
-          cancelled
+          isCancelled
             ? "border-red-500/10 bg-red-500/[0.025] opacity-70"
-            : appointment.status ===
-                "PENDING"
+            : isPending
               ? "border-brand/15 bg-brand/[0.035]"
               : "border-white/10 bg-surface"
         }
@@ -140,7 +147,10 @@ export function CalendarAppointmentCard({
             <Phone className="size-3.5 shrink-0" />
 
             <span className="truncate">
-              {appointment.customer.phone}
+              {
+                appointment.customer
+                  .phone
+              }
             </span>
           </a>
         </div>
@@ -151,9 +161,7 @@ export function CalendarAppointmentCard({
           </p>
 
           <p className="mt-0.5 text-sm font-medium text-white/65">
-            {formatAppointmentTime(
-              appointment.endAt,
-            )}
+            {appointmentEndTime}
           </p>
         </div>
       </div>
@@ -163,7 +171,10 @@ export function CalendarAppointmentCard({
           <Scissors className="size-4 shrink-0 text-brand" />
 
           <span className="truncate text-xs text-white/65">
-            {appointment.service.name}
+            {
+              appointment.service
+                .name
+            }
           </span>
         </div>
 
@@ -180,31 +191,31 @@ export function CalendarAppointmentCard({
         </div>
       </div>
 
-      {appointment.status ===
-        "PENDING" && (
-        <AppointmentActions
-          appointmentId={
-            appointment.id
-          }
-          customerName={
-            appointment.customer.name
-          }
-          customerPhone={
-            appointment.customer.phone
-          }
-          serviceName={
-            appointment.service.name
-          }
-          date={
-            appointmentDate
-          }
-          time={
-            appointmentTime
-          }
-        />
-      )}
+      <AppointmentActions
+        appointmentId={
+          appointment.id
+        }
+        appointmentStatus={
+          appointment.status
+        }
+        customerName={
+          appointment.customer.name
+        }
+        customerPhone={
+          appointment.customer.phone
+        }
+        serviceName={
+          appointment.service.name
+        }
+        date={
+          appointmentDate
+        }
+        time={
+          appointmentTime
+        }
+      />
 
-      {cancelled &&
+      {isCancelled &&
         appointment
           .cancellationReason && (
           <p className="mt-3 text-xs leading-5 text-red-200/50">

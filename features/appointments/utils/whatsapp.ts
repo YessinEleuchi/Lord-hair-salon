@@ -48,7 +48,6 @@ function normalizeWhatsAppPhone(
   let normalized =
     phone.replace(/\D/g, "");
 
-  // 00216XXXXXXXX
   if (
     normalized.startsWith("00216")
   ) {
@@ -56,8 +55,9 @@ function normalizeWhatsAppPhone(
       normalized.slice(2);
   }
 
-  // XXXXXXXX
-  if (normalized.length === 8) {
+  if (
+    normalized.length === 8
+  ) {
     normalized =
       `216${normalized}`;
   }
@@ -68,33 +68,29 @@ function normalizeWhatsAppPhone(
 function getConfirmationMessage(
   appointment: WhatsAppAppointment,
 ) {
-  return [
-    `Bonjour ${appointment.customerName},`,
-    "",
-    "Votre rendez-vous chez THE LORD Hair Salon est confirmé. ✂️",
-    "",
-    `📅 ${appointment.date}`,
-    `🕐 ${appointment.time}`,
-    `✂️ ${appointment.serviceName}`,
-    "",
-    "À bientôt chez THE LORD !",
-  ].join("\n");
+  return `Bonjour ${appointment.customerName},
+
+Votre rendez-vous chez THE LORD Hair Salon est confirmé.
+
+Date : ${appointment.date}
+Heure : ${appointment.time}
+Service : ${appointment.serviceName}
+
+À bientôt chez THE LORD !`;
 }
 
 function getCancellationMessage(
   appointment: WhatsAppAppointment,
 ) {
-  return [
-    `Bonjour ${appointment.customerName},`,
-    "",
-    "Votre demande de rendez-vous chez THE LORD Hair Salon n'a malheureusement pas pu être confirmée.",
-    "",
-    `📅 ${appointment.date}`,
-    `🕐 ${appointment.time}`,
-    `✂️ ${appointment.serviceName}`,
-    "",
-    "Vous pouvez choisir un autre créneau sur notre site.",
-    "",
-    "Merci de votre compréhension.",
-  ].join("\n");
+  return `Bonjour ${appointment.customerName},
+
+Votre demande de rendez-vous chez THE LORD Hair Salon n'a malheureusement pas pu être confirmée.
+
+Date : ${appointment.date}
+Heure : ${appointment.time}
+Service : ${appointment.serviceName}
+
+Vous pouvez choisir un autre créneau sur notre site.
+
+Merci de votre compréhension.`;
 }

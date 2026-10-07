@@ -94,9 +94,7 @@ export async function getAppointmentsByStatus(
   status:
     | "PENDING"
     | "CONFIRMED"
-    | "COMPLETED"
     | "CANCELLED"
-    | "NO_SHOW",
 ) {
   return baseAppointmentQuery()
     .where(

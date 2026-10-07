@@ -9,6 +9,9 @@ import {
 import type {
     PendingAppointment,
 } from "@/features/appointments/queries";
+import {
+  APPOINTMENT_STATUS,
+} from "@/db/schema/enums";
 
 import {
     AppointmentActions,
@@ -124,28 +127,25 @@ export function PendingAppointmentCard({
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
-       <AppointmentActions
-  appointmentId={
-    appointment.id
-  }
-  customerName={
-    appointment.customer.name
-  }
-  customerPhone={
-    appointment.customer.phone
-  }
-  serviceName={
-    appointment.service.name
-  }
-  date={formatAppointmentDate(
-    appointment.startAt,
-  )}
-  time={formatAppointmentTime(
-    appointment.startAt,
-  )}
-/>
-      </div>
+            <div className="mt-5">
+              <AppointmentActions
+                appointmentId={appointment.id}
+                appointmentStatus={
+                  APPOINTMENT_STATUS.PENDING
+                }
+                customerName={
+                  appointment.customer.name
+                }
+                customerPhone={
+                  appointment.customer.phone
+                }
+                serviceName={
+                  appointment.service.name
+                }
+                date={date}
+                time={time}
+              />
+            </div>
     </article>
   );
 }

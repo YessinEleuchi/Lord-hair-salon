@@ -13,6 +13,13 @@ import {
 import {
   WhatsAppCustomerButton,
 } from "@/components/admin/appointment/whatsapp-customer-button";
+import type {
+  AppointmentStatus,
+} from "@/db/schema/enums";
+
+import type {
+  CustomerNotificationStatus,
+} from "@/features/appointments/utils/whatsapp";
 
 import type {
   AppointmentItem,
@@ -40,22 +47,10 @@ const statusConfig = {
       "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
   },
 
-  COMPLETED: {
-    label: "Terminé",
-    className:
-      "border-white/10 bg-white/[0.05] text-white/50",
-  },
-
   CANCELLED: {
     label: "Annulé",
     className:
       "border-red-500/20 bg-red-500/[0.06] text-red-300",
-  },
-
-  NO_SHOW: {
-    label: "Absent",
-    className:
-      "border-orange-500/20 bg-orange-500/[0.07] text-orange-300",
   },
 } as const;
 
@@ -167,16 +162,15 @@ export function AppointmentCard({
         />
       </div>
 
-      <AppointmentActions
-  appointmentId={appointment.id}
-  appointmentStatus={appointment.status}
-  customerName={appointment.customer.name}
-  customerPhone={appointment.customer.phone}
-  serviceName={appointment.service.name}
-  date={appointmentDate}
-  time={appointmentTime}
-/>
-      )}
+        <AppointmentActions
+          appointmentId={appointment.id}
+          appointmentStatus={appointment.status}
+          customerName={appointment.customer.name}
+          customerPhone={appointment.customer.phone}
+          serviceName={appointment.service.name}
+          date={appointmentDate}
+          time={appointmentTime}
+        />
 
       {appointment.status ===
         "CANCELLED" &&

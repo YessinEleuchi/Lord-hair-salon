@@ -2,7 +2,7 @@ export type CreateBookingResult =
   | {
       success: true;
       appointmentId: string;
-      status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED"| "NO_SHOW";
+      status: "PENDING" | "CONFIRMED" | "CANCELLED";
     }
   | {
       success: false;

@@ -14,6 +14,9 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  APPOINTMENT_STATUS,
+} from "@/db/schema/enums";
 
 import {
   AppointmentActions,
@@ -342,27 +345,28 @@ export function NotificationBell({
                         </InfoRow>
                       </div>
                       <AppointmentActions
-  appointmentId={
-    appointment.id
-  }
-  customerName={
-    appointment.customer.name
-  }
-  customerPhone={
-    appointment.customer.phone
-  }
-  serviceName={
-    appointment.service.name
-  }
-  date={formatAppointmentDate(
-    appointment.startAt,
-  )}
-  time={formatAppointmentTime(
-    appointment.startAt,
-  )}
-/>
-
-                      
+                        appointmentId={
+                          appointment.id
+                        }
+                        appointmentStatus={
+                          APPOINTMENT_STATUS.PENDING
+                        }
+                        customerName={
+                          appointment.customer.name
+                        }
+                        customerPhone={
+                          appointment.customer.phone
+                        }
+                        serviceName={
+                          appointment.service.name
+                        }
+                        date={formatAppointmentDate(
+                          appointment.startAt,
+                        )}
+                        time={formatAppointmentTime(
+                          appointment.startAt,
+                        )}
+                      />
                     </div>
                   ),
                 )}
