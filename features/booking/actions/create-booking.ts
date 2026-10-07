@@ -15,13 +15,22 @@ import {
   services,
 } from "@/db/schema";
 
-import { getAvailableSlots } from "@/features/availability/engine/get-available-slots";
-import { normalizePhone } from "@/features/booking/utils/normalize-phone";
+import {
+  getAvailableSlots,
+} from "@/features/availability/engine/get-available-slots";
 
 import {
   createBookingSchema,
   type CreateBookingInput,
 } from "@/features/booking/schemas/create-booking.schema";
+
+import {
+  normalizePhone,
+} from "@/features/booking/utils/normalize-phone";
+
+import {
+  notifyNewBooking,
+} from "@/features/push/notify-new-booking";
 
 import type {
   CreateBookingResult,
@@ -76,10 +85,6 @@ export async function createBooking(
       };
     }
 
-    // ─────────────────────────────────────────────
-    // RECHECK AVAILABILITY
-    // ─────────────────────────────────────────────
-
     const availability =
       await getAvailableSlots({
         staffId: input.staffId,
@@ -108,9 +113,6 @@ export async function createBooking(
       };
     }
 
-    // ─────────────────────────────────────────────
-    // SERVICE
-    // ─────────────────────────────────────────────
 
     const [service] = await db
       .select({
@@ -141,9 +143,6 @@ export async function createBooking(
       };
     }
 
-    // ─────────────────────────────────────────────
-    // DATE / TIME
-    // ─────────────────────────────────────────────
 
     const [
       year,
@@ -238,10 +237,6 @@ export async function createBooking(
       };
     }
 
-    // ─────────────────────────────────────────────
-    // TRANSACTION
-    // ─────────────────────────────────────────────
-
     const appointment =
       await db.transaction(
         async (tx) => {
@@ -309,12 +304,15 @@ export async function createBooking(
                 service.price,
 
               status:
-                settings.autoConfirmAppointments
+                settings
+                  .autoConfirmAppointments
                   ? "CONFIRMED"
                   : "PENDING",
             })
             .returning({
-              id: appointments.id,
+              id:
+                appointments.id,
+
               status:
                 appointments.status,
             });
@@ -322,6 +320,20 @@ export async function createBooking(
           return createdAppointment;
         },
       );
+
+    if (
+      appointment.status ===
+      "PENDING"
+    ) {
+      try {
+        await notifyNewBooking();
+      } catch (error) {
+        console.error(
+          "[Booking] Push notification failed:",
+          error,
+        );
+      }
+    }
 
     return {
       success: true,

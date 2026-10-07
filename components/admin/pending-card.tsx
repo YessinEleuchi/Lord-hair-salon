@@ -125,8 +125,25 @@ export function PendingAppointmentCard({
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-2.5">
-        <AppointmentActions
-  appointmentId={appointment.id}
+       <AppointmentActions
+  appointmentId={
+    appointment.id
+  }
+  customerName={
+    appointment.customer.name
+  }
+  customerPhone={
+    appointment.customer.phone
+  }
+  serviceName={
+    appointment.service.name
+  }
+  date={formatAppointmentDate(
+    appointment.startAt,
+  )}
+  time={formatAppointmentTime(
+    appointment.startAt,
+  )}
 />
       </div>
     </article>

@@ -13,6 +13,9 @@ import {
 import {
   GestionHeader,
 } from "@/components/admin/header";
+import {
+  AppointmentRealtimeListener,
+} from "@/components/admin/realtime/appointment-realtime-listener";
 
 import {
   GestionSidebar,
@@ -21,6 +24,9 @@ import {
 import {
   createClient,
 } from "@/lib/supabase/server";
+import {
+  PushNotificationManager,
+} from "@/components/admin/notifications/push-notification-manager";
 
 export default async function GestionLayout({
   children,
@@ -41,6 +47,8 @@ export default async function GestionLayout({
 
   return (
     <div className="min-h-dvh bg-background text-white">
+       <AppointmentRealtimeListener />
+       <PushNotificationManager />
       <GestionSidebar />
 
       <div className="min-w-0 lg:pl-64">

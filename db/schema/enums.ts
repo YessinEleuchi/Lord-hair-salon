@@ -7,3 +7,7 @@ export const appointmentStatusEnum = pgEnum("appointment_status", [
   "CANCELLED",
   "NO_SHOW",
 ]);
+
+
+export type AppointmentStatus =
+  (typeof appointmentStatusEnum.enumValues)[number];

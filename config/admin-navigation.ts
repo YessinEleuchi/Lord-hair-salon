@@ -2,8 +2,7 @@ import {
   CalendarDays,
   Clock3,
   LayoutDashboard,
-  Scissors,
-  Settings,
+  Scissors
 } from "lucide-react";
 
 export const gestionNavigation = [
@@ -29,10 +28,10 @@ export const gestionNavigation = [
     href: "/gestion/planning",
     icon: Clock3,
   },
-  {
+  /*{
     label: "Paramètres",
     shortLabel: "Réglages",
     href: "/gestion/parametres",
     icon: Settings,
-  },
+  },*/
 ] as const;

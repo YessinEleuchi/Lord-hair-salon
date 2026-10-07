@@ -1,10 +1,15 @@
-"use client";
+import {
+  NotificationBell,
+} from "@/components/admin/notifications/notification-bell";
 
 import {
-  Bell,
-} from "lucide-react";
+  getPendingAppointments,
+} from "@/features/appointments/queries";
 
-export function GestionHeader() {
+export async function GestionHeader() {
+  const pendingAppointments =
+    await getPendingAppointments();
+
   return (
     <header
       className="
@@ -38,46 +43,11 @@ export function GestionHeader() {
           </p>
         </div>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="
-            relative
-            flex
-            size-10
-            touch-manipulation
-            items-center
-            justify-center
-            rounded-xl
-            border
-            border-white/10
-            bg-surface
-            text-white/70
-            transition
-            hover:border-white/20
-            hover:text-white
-          "
-        >
-          <Bell className="size-[18px]" />
-
-          {/*
-            Plus tard :
-            afficher uniquement si pendingCount > 0
-          */}
-
-          <span
-            className="
-              absolute
-              right-2
-              top-2
-              size-2
-              rounded-full
-              bg-brand
-              ring-2
-              ring-background
-            "
-          />
-        </button>
+        <NotificationBell
+          appointments={
+            pendingAppointments
+          }
+        />
       </div>
     </header>
   );

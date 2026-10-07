@@ -11,18 +11,21 @@ import {
 } from "lucide-react";
 
 import {
-  updateWorkingHour,
+  updateWorkingDay,
 } from "@/features/planning/actions/update-working-hour";
 
 type Props = {
-  id: string;
+  staffId: string;
+  dayOfWeek: number;
+
   startTime: string;
   endTime: string;
   enabled: boolean;
 };
 
 export function WorkingHourRow({
-  id,
+  staffId,
+  dayOfWeek,
   startTime: initialStart,
   endTime: initialEnd,
   enabled: initialEnabled,
@@ -60,15 +63,18 @@ export function WorkingHourRow({
   ] = useState(false);
 
   function save() {
-    if (pending) return;
+    if (pending) {
+      return;
+    }
 
     setError(null);
     setSaved(false);
 
     startTransition(async () => {
       const result =
-        await updateWorkingHour({
-          id,
+        await updateWorkingDay({
+          staffId,
+          dayOfWeek,
           startTime,
           endTime,
           enabled,
@@ -98,11 +104,15 @@ export function WorkingHourRow({
           type="button"
           role="switch"
           aria-checked={enabled}
-          onClick={() =>
+          disabled={pending}
+          onClick={() => {
             setEnabled(
               (value) => !value,
-            )
-          }
+            );
+
+            setSaved(false);
+            setError(null);
+          }}
           className={`
             relative
             h-6
@@ -110,6 +120,8 @@ export function WorkingHourRow({
             shrink-0
             rounded-full
             transition
+            disabled:cursor-not-allowed
+            disabled:opacity-50
             ${
               enabled
                 ? "bg-brand"
@@ -152,8 +164,14 @@ export function WorkingHourRow({
       >
         <TimeInput
           value={startTime}
-          onChange={setStartTime}
-          disabled={!enabled}
+          onChange={(value) => {
+            setStartTime(value);
+            setSaved(false);
+            setError(null);
+          }}
+          disabled={
+            !enabled || pending
+          }
         />
 
         <span className="text-xs text-white/25">
@@ -162,8 +180,14 @@ export function WorkingHourRow({
 
         <TimeInput
           value={endTime}
-          onChange={setEndTime}
-          disabled={!enabled}
+          onChange={(value) => {
+            setEndTime(value);
+            setSaved(false);
+            setError(null);
+          }}
+          disabled={
+            !enabled || pending
+          }
         />
       </div>
 
@@ -194,6 +218,7 @@ export function WorkingHourRow({
           transition
           hover:bg-white/[0.1]
           hover:text-white
+          active:scale-[0.99]
           disabled:pointer-events-none
           disabled:opacity-50
         "
@@ -222,9 +247,11 @@ function TimeInput({
   disabled,
 }: {
   value: string;
+
   onChange: (
     value: string,
   ) => void;
+
   disabled: boolean;
 }) {
   return (

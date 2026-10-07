@@ -6,3 +6,4 @@ export * from "./customers";
 export * from "./appointments";
 export * from "./settings";
 export * from "./relations";
+export * from "./push-subscriptions";

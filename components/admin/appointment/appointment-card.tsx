@@ -1,22 +1,26 @@
 import {
-    CalendarDays,
-    Clock3,
-    Phone,
-    Scissors,
-    UserRound,
+  CalendarDays,
+  Clock3,
+  Phone,
+  Scissors,
+  UserRound,
 } from "lucide-react";
 
 import {
-    AppointmentActions,
+  AppointmentActions,
 } from "@/components/admin/appointment/appointment-actions";
 
+import {
+  WhatsAppCustomerButton,
+} from "@/components/admin/appointment/whatsapp-customer-button";
+
 import type {
-    AppointmentItem,
+  AppointmentItem,
 } from "@/features/appointments/queries";
 
 import {
-    formatAppointmentDate,
-    formatAppointmentTime,
+  formatAppointmentDate,
+  formatAppointmentTime,
 } from "@/features/appointments/utils/format-appointment";
 
 type AppointmentCardProps = {
@@ -63,6 +67,16 @@ export function AppointmentCard({
       appointment.status
     ];
 
+  const appointmentDate =
+    formatAppointmentDate(
+      appointment.startAt,
+    );
+
+  const appointmentTime =
+    formatAppointmentTime(
+      appointment.startAt,
+    );
+
   return (
     <article className="min-w-0 rounded-2xl border border-white/10 bg-surface p-4 sm:p-5">
       <div className="flex min-w-0 items-start justify-between gap-4">
@@ -90,7 +104,17 @@ export function AppointmentCard({
 
           <a
             href={`tel:${appointment.customer.phone}`}
-            className="mt-1.5 inline-flex max-w-full items-center gap-1.5 text-xs text-white/40 transition hover:text-brand"
+            className="
+              mt-1.5
+              inline-flex
+              max-w-full
+              items-center
+              gap-1.5
+              text-xs
+              text-white/40
+              transition
+              hover:text-brand
+            "
           >
             <Phone className="size-3.5 shrink-0" />
 
@@ -102,15 +126,11 @@ export function AppointmentCard({
 
         <div className="shrink-0 text-right">
           <p className="text-xl font-semibold tracking-[-0.04em] text-white">
-            {formatAppointmentTime(
-              appointment.startAt,
-            )}
+            {appointmentTime}
           </p>
 
           <p className="mt-1 text-[11px] capitalize text-white/35">
-            {formatAppointmentDate(
-              appointment.startAt,
-            )}
+            {appointmentDate}
           </p>
         </div>
       </div>
@@ -147,18 +167,21 @@ export function AppointmentCard({
         />
       </div>
 
-      {appointment.status ===
-        "PENDING" && (
-        <AppointmentActions
-          appointmentId={
-            appointment.id
-          }
-        />
+      <AppointmentActions
+  appointmentId={appointment.id}
+  appointmentStatus={appointment.status}
+  customerName={appointment.customer.name}
+  customerPhone={appointment.customer.phone}
+  serviceName={appointment.service.name}
+  date={appointmentDate}
+  time={appointmentTime}
+/>
       )}
 
       {appointment.status ===
         "CANCELLED" &&
-        appointment.cancellationReason && (
+        appointment
+          .cancellationReason && (
           <div className="mt-4 rounded-xl border border-red-500/10 bg-red-500/[0.04] px-3 py-2.5">
             <p className="text-[10px] uppercase tracking-[0.1em] text-white/25">
               Motif
@@ -166,11 +189,42 @@ export function AppointmentCard({
 
             <p className="mt-1 text-xs leading-5 text-red-200/70">
               {
-                appointment.cancellationReason
+                appointment
+                  .cancellationReason
               }
             </p>
           </div>
         )}
+
+      {(
+        appointment.status ===
+          "CONFIRMED" ||
+        appointment.status ===
+          "CANCELLED"
+      ) && (
+        <div className="mt-4 border-t border-white/[0.06] pt-4">
+          <WhatsAppCustomerButton
+            status={
+              appointment.status
+            }
+            customerName={
+              appointment.customer.name
+            }
+            customerPhone={
+              appointment.customer.phone
+            }
+            serviceName={
+              appointment.service.name
+            }
+            date={
+              appointmentDate
+            }
+            time={
+              appointmentTime
+            }
+          />
+        </div>
+      )}
     </article>
   );
 }
